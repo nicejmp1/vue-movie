@@ -12,7 +12,7 @@ const router = createRouter({
     },
     {
       path: '/detail/:movieID',
-      name: 'datail',
+      name: 'detail',
       component: DetailView,
       props: true
     }

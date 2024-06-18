@@ -1,9 +1,11 @@
 :root {
   --fontJ: 'theJamsil';
   --fontE: 'eduAll';
+  --fontN: 'Noto Sans KR';
 
-  --mainBg: #1c1c1c;
-  --pointColor: #7d57ff;
+  --mainBg: #f9f9f9;
+  --pointColor: #ce3a1b;
+  --oppColor: #5785ff;
   --pointBg: #f5f5ff;
 
   --black: #000;
@@ -23,7 +25,7 @@
   --white500: #c0c0c0;
 
   // 폰트 셋팅
-  font-family: var(--fontE);
+  font-family: var(--fontN);
   font-size: 16px;
   line-height: 1.5;
   font-weight: 400;
