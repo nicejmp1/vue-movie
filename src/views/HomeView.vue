@@ -3,6 +3,7 @@ import { onMounted, ref, watch, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 import HeaderSection from '@/components/HeaderSection.vue'
 import FooterSection from '@/components/FooterSection.vue'
+import SliderSection from '@/components/SliderSection.vue'
 import Modal from '@/components/ModalSection.vue'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiVolumeHigh, mdiVolumeOff, mdiPlay, mdiPause, mdiStar } from '@mdi/js'
@@ -356,6 +357,7 @@ export default {
         </div>
       </section>
     </div>
+    <SliderSection />
   </main>
 
   <FooterSection />
@@ -454,7 +456,7 @@ export default {
 
   h3 {
     font-family: 'theJamsil';
-    font-weight: 300;
+    font-weight: 800;
     margin-bottom: 10px;
     font-size: 30px;
     color: var(--black);
