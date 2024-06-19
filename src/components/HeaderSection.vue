@@ -1,25 +1,38 @@
 <template>
   <header id="header" role="banner">
-    <div class="header_inner container">
-      <h1><router-link :to="{ name: 'home' }">Movie World</router-link></h1>
-      <div class="search">
-        <div class="search-box">
-          <input type="search" placeholder="영화를 검색해보세요!!" />
-          <button>검색</button>
+    <div class="container">
+      <div class="header_inner">
+        <h1><router-link :to="{ name: 'home' }">Movie World</router-link></h1>
+        <div class="search">
+          <div class="search-box">
+            <input
+              type="search"
+              v-model="query"
+              placeholder="영화를 검색해보세요!!"
+              @keyup.enter="search"
+            />
+            <button @click="search">검색</button>
+          </div>
         </div>
       </div>
     </div>
-    <nav class="nav">
-      <ul>
-        <li><a href="#">영화</a></li>
-        <li><a href="#">홈</a></li>
-        <li><a href="#">홈</a></li>
-        <li><a href="#">홈</a></li>
-      </ul>
-    </nav>
   </header>
   <!-- //header -->
 </template>
+
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const query = ref('')
+const router = useRouter()
+
+const search = () => {
+  if (query.value.trim()) {
+    router.push({ name: 'search', query: { q: query.value } })
+  }
+}
+</script>
 
 <style lang="scss">
 #header {

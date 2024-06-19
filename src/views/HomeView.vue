@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch, onBeforeUnmount } from 'vue'
 import axios from 'axios'
 import HeaderSection from '@/components/HeaderSection.vue'
 import FooterSection from '@/components/FooterSection.vue'
@@ -23,7 +23,7 @@ const apikey = import.meta.env.VITE_TMDB_API_KEY
 const movieIds = [1022789, 748783, 653346] // 원하는 영화 ID 리스트
 
 let currentVideoIndex = ref(0)
-let currentVideo = ref(null)
+let currentVideo = ref(JSON.parse(localStorage.getItem('currentVideo')) || null)
 let player = null
 let isMuted = ref(true)
 let isPlaying = ref(false)
@@ -43,7 +43,7 @@ const fetchMovies = async () => {
 const fetchPopular = async () => {
   try {
     const popularResponse = await axios.get(
-      `https://api.themoviedb.org/3/movie/popular?api_key=${apikey}&page=1`
+      `https://api.themoviedb.org/3/movie/popular?api_key=${apikey}&language=ko&page=1`
     )
     popularMovies.value = popularResponse.data.results
     console.log(popularResponse)
@@ -105,6 +105,7 @@ const nextVideo = () => {
   if (movieVideos.value.flat().length > 0) {
     currentVideoIndex.value = (currentVideoIndex.value + 1) % movieVideos.value.flat().length
     currentVideo.value = movieVideos.value.flat()[currentVideoIndex.value]
+    localStorage.setItem('currentVideo', JSON.stringify(currentVideo.value))
     if (player) {
       player.loadVideoById(currentVideo.value.key)
     }
@@ -112,24 +113,26 @@ const nextVideo = () => {
 }
 
 const loadPlayer = () => {
-  if (window.YT) {
-    player = new window.YT.Player('video-player', {
-      width: '1000px',
-      height: '900px',
-      videoId: currentVideo.value.key,
-      playerVars: { controls: 0 }, // 사용자 컨트롤 숨기기
-      events: {
-        onReady: onPlayerReady,
-        onStateChange: onPlayerStateChange
+  if (currentVideo.value) {
+    if (window.YT) {
+      player = new window.YT.Player('video-player', {
+        width: '1000px',
+        height: '900px',
+        videoId: currentVideo.value.key,
+        playerVars: { controls: 0 }, // 사용자 컨트롤 숨기기
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange
+        }
+      })
+    } else {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+      window.onYouTubeIframeAPIReady = () => {
+        loadPlayer()
       }
-    })
-  } else {
-    const tag = document.createElement('script')
-    tag.src = 'https://www.youtube.com/iframe_api'
-    const firstScriptTag = document.getElementsByTagName('script')[0]
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-    window.onYouTubeIframeAPIReady = () => {
-      loadPlayer()
     }
   }
 }
@@ -172,9 +175,33 @@ const togglePlayPause = () => {
   }
 }
 
+// 컴포넌트가 마운트될 때 비디오 플레이어를 다시 로드
+const reloadVideoPlayer = () => {
+  if (currentVideo.value) {
+    loadPlayer()
+  }
+}
+
 onMounted(fetchMovies)
 onMounted(fetchPopular)
 onMounted(fetchAllVideos)
+onMounted(reloadVideoPlayer) // 비디오 플레이어 다시 로드
+
+// watch를 사용하여 currentVideo가 변경될 때마다 loadPlayer를 호출
+watch(currentVideo, (newVideo) => {
+  if (newVideo) {
+    loadPlayer()
+    localStorage.setItem('currentVideo', JSON.stringify(newVideo))
+  }
+})
+
+// 페이지가 언마운트될 때 비디오 플레이어를 초기화
+onBeforeUnmount(() => {
+  if (player) {
+    player.destroy()
+    player = null
+  }
+})
 </script>
 
 <script>
@@ -291,39 +318,41 @@ export default {
       </section>
       <section class="view__card style1">
         <h3>인기 영화</h3>
-        <div class="card">
-          <ul>
-            <li
-              class="card"
-              v-for="movie in popularMovies"
-              :key="movie.id"
-              @click="() => fetchVideo(movie.id)"
-            >
+        <div class="swiper-container card">
+          <swiper
+            :slidesPerView="3"
+            :spaceBetween="10"
+            :centeredSlides="false"
+            :navigation="true"
+            :modules="[Autoplay, Navigation]"
+            class="mySwiper"
+            :breakpoints="{
+              320: { slidesPerView: 2 },
+              768: { slidesPerView: 3 },
+              1024: { slidesPerView: 4 },
+              1200: { slidesPerView: 5 }
+            }"
+          >
+            <swiper-slide class="slider" v-for="movie in popularMovies" :key="movie.id">
               <img
                 :src="'https://image.tmdb.org/t/p/w500/' + movie.poster_path"
                 :alt="movie.title"
               />
               <span>{{ movie.title }}</span>
-              <p>인기 수 : {{ movie.popularity }}</p>
-              <span>평점 : {{ movie.vote_average }}</span>
-            </li>
-          </ul>
-        </div>
-      </section>
-      <section class="view__card style1">
-        <h3>인기 영화</h3>
-        <div class="card">
-          <ul>
-            <li class="card" v-for="movie in popularMovies" :key="movie.id">
-              <img
-                :src="'https://image.tmdb.org/t/p/w500/' + movie.poster_path"
-                :alt="movie.title"
-              />
-              <span>{{ movie.title }}</span>
-              <p>인기 수 : {{ movie.popularity }}</p>
-              <span>평점 : {{ movie.vote_average }}</span>
-            </li>
-          </ul>
+              <p>개봉일 : {{ movie.release_date }}</p>
+              <p><svg-icon type="mdi" :path="pathStart"></svg-icon> {{ movie.vote_average }}</p>
+              <div class="movieChart_btn_wrap">
+                <router-link
+                  :to="{ name: 'detail', params: { movieID: movie.id } }"
+                  class="btn_movie_detail"
+                  >상세보기</router-link
+                >
+                <a href="#" @click.prevent="fetchVideo(movie.id)" class="btn_movie_video"
+                  >티저영상</a
+                >
+              </div>
+            </swiper-slide>
+          </swiper>
         </div>
       </section>
     </div>
@@ -352,12 +381,12 @@ export default {
 
   .video-overlay {
     position: absolute;
+    left: 0;
     bottom: 20px;
-    left: 20px;
-    color: white;
     z-index: 10;
     background-color: rgba(0, 0, 0, 0.5);
-    padding: 1rem;
+    padding: 0 8rem 0 8rem;
+    color: var(--white);
     border-radius: 5px;
 
     button {
