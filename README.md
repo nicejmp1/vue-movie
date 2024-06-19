@@ -3,11 +3,7 @@
 
 이 프로젝트는 Vue와 ,TMDB API 데이터를 활용하여 만든 사이트 입니다. 
 
-# 사용한 기술 - api 
-- TMDB Api (https://developer.themoviedb.org/docs/getting-started)
-- Vue.js , Scss, HTML, Swiper
-
-## vue 설치 방법 
+# vue 설치 방법 
 ````
 npm init vue@latest
 Project name: .
@@ -17,6 +13,18 @@ npm i axios
 npm i scss
 npm i oh-vue-icons
 ````
+
+# 사용한 기술 - api 
+- TMDB Api (https://developer.themoviedb.org/docs/getting-started)
+- Vue.js , Scss, HTML, Swiper
+
+# 제작 기간 
+- 2024.06.17 ~ 2024.06.19
+
+# 프로젝트 배포
+- https://movie-world-list.netlify.app/detail/614933
+
+
 
 # 주요 기능 
 - **자동 슬라이드** : 최신 영화를 자동으로 넘기며 보여줍니다.
