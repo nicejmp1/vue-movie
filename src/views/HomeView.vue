@@ -16,6 +16,7 @@ const pathStart = ref(mdiStar)
 
 const latestMovies = ref([])
 const popularMovies = ref([])
+const topMovies = ref([])
 const movieVideo = ref(null)
 const modalRef = ref(null)
 const movieVideos = ref([])
@@ -48,6 +49,18 @@ const fetchPopular = async () => {
     )
     popularMovies.value = popularResponse.data.results
     console.log(popularResponse)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+const fetchTop = async () => {
+  try {
+    const topResponse = await axios.get(
+      `https://api.themoviedb.org/3/movie/top_rated?api_key=${apikey}&language=ko&page=1`
+    )
+    topMovies.value = topResponse.data.results
+    console.log(topResponse)
   } catch (error) {
     console.error(error)
   }
@@ -185,6 +198,7 @@ const reloadVideoPlayer = () => {
 
 onMounted(fetchMovies)
 onMounted(fetchPopular)
+onMounted(fetchTop)
 onMounted(fetchAllVideos)
 onMounted(reloadVideoPlayer) // 비디오 플레이어 다시 로드
 
@@ -335,6 +349,46 @@ export default {
             }"
           >
             <swiper-slide class="slider" v-for="movie in popularMovies" :key="movie.id">
+              <img
+                :src="'https://image.tmdb.org/t/p/w500/' + movie.poster_path"
+                :alt="movie.title"
+              />
+              <span>{{ movie.title }}</span>
+              <p>개봉일 : {{ movie.release_date }}</p>
+              <p><svg-icon type="mdi" :path="pathStart"></svg-icon> {{ movie.vote_average }}</p>
+              <div class="movieChart_btn_wrap">
+                <router-link
+                  :to="{ name: 'detail', params: { movieID: movie.id } }"
+                  class="btn_movie_detail"
+                  >상세보기</router-link
+                >
+                <a href="#" @click.prevent="fetchVideo(movie.id)" class="btn_movie_video"
+                  >티저영상</a
+                >
+              </div>
+            </swiper-slide>
+          </swiper>
+        </div>
+      </section>
+
+      <section class="view__card style1">
+        <h3>최고의 영화</h3>
+        <div class="swiper-container card">
+          <swiper
+            :slidesPerView="3"
+            :spaceBetween="10"
+            :centeredSlides="false"
+            :navigation="true"
+            :modules="[Autoplay, Navigation]"
+            class="mySwiper"
+            :breakpoints="{
+              320: { slidesPerView: 2 },
+              768: { slidesPerView: 3 },
+              1024: { slidesPerView: 4 },
+              1200: { slidesPerView: 5 }
+            }"
+          >
+            <swiper-slide class="slider" v-for="movie in topMovies" :key="movie.id">
               <img
                 :src="'https://image.tmdb.org/t/p/w500/' + movie.poster_path"
                 :alt="movie.title"
