@@ -10,6 +10,8 @@ lerna-debug.log*
 .env
 node_modules
 .DS_Store
+.firebase
+.firebaserc
 dist
 dist-ssr
 coverage
